@@ -1,0 +1,16 @@
+# Main dependencies
+matplotlib>=3.7.1
+minigrid>=2.2.1
+moviepy>=1.0.3
+scipy>=1.15.3
+pandas>=2.2.3
+seaborn>=0.13.2
+
+# Development dependencies
+flake8>=6.0.0
+mypy>=1.3.0
+rope>=1.8.0
+isort>=5.12.0
+ipython>=8.13.2
+notebook>=6.5.4
+black>=23.3.0
