@@ -94,5 +94,5 @@ def plot_result(regrets, logscale=False, lb=None,q=10, mode = 'regret', cumulati
     header = "Cumulative " if cumulative else ""
     plt.ylabel(header + mode.capitalize())
     plt.legend()
-    #reg_plot.show()
+    reg_plot.show()
     return reg_plot #notebook version
