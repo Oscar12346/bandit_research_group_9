@@ -1,14 +1,14 @@
 import numpy as np
 
 from agents.agent import Agent
-from environments.environment import Environment
+from environments.adversarial_contextual_env import AdversarialContextualEnv
 
 class AdversarialContextualMAB:
 
     def __init__(self):
         pass 
 
-    def play(self, agent: Agent, environment: Environment, num_sim: int, horizon: int):
+    def play(self, agent: Agent, environment: AdversarialContextualEnv, num_sim: int, horizon: int):
         
         # init results
         rewards = np.zeros((num_sim, horizon))
@@ -24,8 +24,9 @@ class AdversarialContextualMAB:
             for t in range(horizon):
 
                 # Interact with the environment
+                context = environment.get_context()
                 action = agent.get_action()
-                reward = environment.get_reward(action)
+                reward = environment.get_reward(action, context)
                 agent.receive_reward(action,reward)
 
                 # compute instantaneous reward  and (pseudo) regret
