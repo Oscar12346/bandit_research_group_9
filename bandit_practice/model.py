@@ -605,3 +605,19 @@ class MAB_env(Environment):
             
     def get_means(self):
         return  self.theta
+
+class Random_Adversarial_MAB_env(Environment):
+
+    def __init__(self, arms, r_range=None):
+        if r_range is None:
+            r_range = [0.0, 1.0]
+        self.r_range = r_range
+        self.K = arms
+        self.theta = np.zeros(arms)
+
+    def get_reward(self, action):
+        self.theta = np.random.uniform(self.r_range[0], self.r_range[1], self.K)
+        return self.theta[action]
+
+    def get_means(self):
+        return self.theta

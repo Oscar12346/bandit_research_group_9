@@ -7,6 +7,9 @@ import pandas as pd
 import seaborn as sns
 import matplotlib
 import matplotlib.pyplot as plt
+
+from bandit_practice.model import Random_Adversarial_MAB_env
+
 matplotlib.style.use('seaborn-v0_8')
 
 import model
@@ -85,8 +88,9 @@ def experiment_mab(environment, agents, N, T, mode="regret"):
 if __name__ == "__main__":
     K = 3  # number of arms
 
-    # TODO We should change this to our adversarial strategy for rewards
-    env = MAB_env(bandit_solutions.MEANS)  # We don't know the reward distributions in advance!
+    # We should change this to our adversarial strategy for rewards
+    # This is now random rewards at each step.
+    env = Random_Adversarial_MAB_env(10)  # We don't know the reward distributions in advance!
 
     T = 1000  # Horizon
     N = 50  # number of simulations
@@ -96,9 +100,9 @@ if __name__ == "__main__":
     tsav = range(2, T, Nsub)
 
     exp3 = Exp3(K)
-    experiment = experiment_mab(env, [exp3], N=N, T=T, mode="reward")
+    experiment = experiment_mab(env, [exp3], N=N, T=T, mode="regret")
 
-    display.plot_result(experiment, q=10, mode="reward", cumulative=False)
+    display.plot_result(experiment, q=10, mode="regret", cumulative=False)
 
     # greedy = bandit_solutions.EpsilonGreedy(K, eps=0.1)
     #
