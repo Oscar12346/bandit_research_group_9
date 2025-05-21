@@ -1,7 +1,12 @@
 import numpy as np
 
-from agents.agent import Agent
+from agents.agent import Agent, Exp3
 from environments.adversarial_contextual_env import AdversarialContextualEnv
+from src.adversaries.deceptive_adversary import DeceptiveAdversary
+from src.agents.old_agents import LinEpsilonGreedy
+from src.contexts.gaussian_context import GaussianContext
+from src.display import display
+
 
 class AdversarialContextualMAB:
 
@@ -25,6 +30,7 @@ class AdversarialContextualMAB:
 
                 # Interact with the environment
                 context = environment.get_context()
+                # action_set = environment.get_action_set()
                 action = agent.get_action()
                 reward = environment.get_reward(action, context)
                 agent.receive_reward(action,reward)
@@ -42,7 +48,7 @@ class AdversarialContextualMAB:
 #     Runnable for contextual bandit environments
 if __name__ == "__main__":
     d = 7  # Feature dimension
-    K = 3  # Number of arms per timestep (number of website versions)
+    K = 2  # Number of arms per timestep (number of website versions)
     n_contexts = 2  # Number of contexts (types of users)
     theta = np.random.normal(0., 1., size=d)
     theta = theta / np.linalg.norm(theta)
@@ -59,3 +65,15 @@ if __name__ == "__main__":
     tsav = range(2, T, Nsub)
     # Choice of percentile display
     q = 10
+
+    exp3 = Exp3(K)
+
+    acmab = AdversarialContextualMAB()
+    adversary = DeceptiveAdversary()
+    context = GaussianContext(n_contexts, K, d)
+    # Example contextual algorithm
+    adversarial_env = AdversarialContextualEnv(adversary, context)
+    exp3_experiment = acmab.play(exp3, adversarial_env, num_sim=N, horizon=T)
+    # lin_eps_greedy = LinEpsilonGreedy(d, 1.0, 0.1)
+    # lin_eps_greedy_experiment = acmab.play(lin_eps_greedy, adversarial_env , num_sim=N, horizon=T)
+    # # display.plot_result(lin_eps_greedy_experiment)

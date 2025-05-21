@@ -10,9 +10,14 @@ class AdversarialContextualEnv(Environment):
 
         self.adversary = adversary
         self.context = context
+
+
     
     def get_reward(self, action: int, context: np.ndarray) -> float:
         return self.adversary.get_reward(action, context)
     
     def get_context(self) -> np.ndarray:
         return self.context.get_context()
+
+    def get_action_set(self):
+        return self.context.get_action_set()

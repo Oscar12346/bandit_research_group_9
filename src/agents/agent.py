@@ -9,11 +9,12 @@ class Agent:
     def reset(self):
         pass
 
-    def get_action(self):
+    def get_action(self, arms=None):
         pass
 
     def receive_reward(self, action: int, reward: float):
         pass
+
 
 class Exp3(Agent):
   def __init__(self, K, lr=0.1):

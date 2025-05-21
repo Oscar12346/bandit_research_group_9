@@ -1,5 +1,7 @@
 from numpy import ndarray
-from adversary import Adversary
+
+from src.adversaries.adversary import Adversary
+
 
 class DeceptiveAdversary(Adversary):
     def __init__(self):
