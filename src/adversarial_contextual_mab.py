@@ -38,3 +38,24 @@ class AdversarialContextualMAB:
                 pseudo_regrets[n,t] = best_reward - means[action]
 
         return agent.name, rewards, regrets, avg_rewards, pseudo_regrets
+
+#     Runnable for contextual bandit environments
+if __name__ == "__main__":
+    d = 7  # Feature dimension
+    K = 3  # Number of arms per timestep (number of website versions)
+    n_contexts = 2  # Number of contexts (types of users)
+    theta = np.random.normal(0., 1., size=d)
+    theta = theta / np.linalg.norm(theta)
+
+    T = 1000  # Finite Horizon
+    N = 50  # Monte Carlo simulations
+
+    # The parameter theta is unknown, but we know it's been normalized (the l2 norm of theta is 1)
+    # Feature vectors are also normalized
+    # lin_env = LinearBandit(theta, K, n_contexts)
+
+    # Save subsampled points for Figures
+    Nsub = 100
+    tsav = range(2, T, Nsub)
+    # Choice of percentile display
+    q = 10
