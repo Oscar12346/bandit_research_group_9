@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Environment:
 
     def __init__(self):
@@ -7,4 +10,7 @@ class Environment:
         pass
 
     def get_mean_rewards(self) -> list:
+        pass
+
+    def get_adversary(self):
         pass
