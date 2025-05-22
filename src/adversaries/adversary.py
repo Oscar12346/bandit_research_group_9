@@ -6,3 +6,7 @@ class Adversary:
 
     def get_reward(self, action: int, context: np.ndarray) -> float:
         pass
+    def get_best_reward(self):
+        pass
+    def reset(self):
+        pass

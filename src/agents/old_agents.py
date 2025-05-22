@@ -1,14 +1,8 @@
-from agent import Agent
-
-# !/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jun 29 20:11:07 2023
-
-@author: matteo
-"""
 import numpy as np
 from numpy.linalg import pinv
+
+from src.agents.agent import Agent
+
 
 MEANS = np.array([0.1, 0.5, 0.9])
 EPSILON = 0.1
@@ -206,7 +200,9 @@ class LinUCB(Agent):
         self.b_t = np.zeros(self.d)
 
     def get_action(self, arms):
-        K, _ = arms.shape
+
+        K = self.K
+
         self.UCBs = np.zeros(K)
 
         # IN THIS SOLUTION we have replaced the exploration parameter given in the notebook with a tighter one
@@ -305,6 +301,6 @@ class LinTS(Agent):
         pass
 
     def name(self):
-        return "LinTS"
 
+        return "LinTS"
 
