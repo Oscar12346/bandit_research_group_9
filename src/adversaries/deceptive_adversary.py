@@ -32,3 +32,6 @@ class DeceptiveAdversary(Adversary):
 
     def get_best_reward(self):
         return 1.0
+
+    def reset(self):
+        self.history = []

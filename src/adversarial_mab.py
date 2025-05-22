@@ -2,6 +2,7 @@ import numpy as np
 
 from src.adversaries.deceptive_adversary import DeceptiveAdversary
 from src.agents.agent import Exp3
+from src.agents.old_agents import EpsilonGreedy
 from src.display import display
 from src.environments.environment import *
 from src.environments.adversarial_mab_env import *
@@ -30,6 +31,7 @@ class AdversarialMultiArmedBandit:
 
         for n in range(N):
             agent.reset()
+            adversary.reset()
             for t in range(T):
                 action = agent.get_action()
                 reward = environment.get_reward(action)
@@ -84,7 +86,7 @@ if __name__ == "__main__":
     adversary = DeceptiveAdversary()
     random_mab_env = Adversarial_MAB_env(K, adversary)
 
-    T = 1000  # Horizon
+    T = 1000 # Horizon
     N = 1  # number of simulations
 
     # Visualization
@@ -92,8 +94,12 @@ if __name__ == "__main__":
     tsav = range(2, T, Nsub)
 
     exp3 = Exp3(K)
+    exp3_2 = Exp3(K, lr=0.2)
+    exp3_3 = Exp3(K, lr=0.3)
+    exp3_4 = Exp3(K, lr=0.9)
+    eps_greedy = EpsilonGreedy(K, 0.01)
     amab = AdversarialMultiArmedBandit()
-    experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="reward")
+    experiment = amab.experiment_mab(random_mab_env, [exp3, exp3_2, exp3_3, exp3_4, eps_greedy], N=N, T=T, mode="reward")
 
     display.plot_result(experiment, q=10, mode="reward", cumulative=False)
 

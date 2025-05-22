@@ -8,3 +8,5 @@ class Adversary:
         pass
     def get_best_reward(self):
         pass
+    def reset(self):
+        pass
