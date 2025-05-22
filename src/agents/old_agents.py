@@ -3,6 +3,7 @@ from numpy.linalg import pinv
 
 from src.agents.agent import Agent
 
+
 MEANS = np.array([0.1, 0.5, 0.9])
 EPSILON = 0.1
 _theta = np.array([0.45, 0.5, 0.5])
@@ -199,7 +200,9 @@ class LinUCB(Agent):
         self.b_t = np.zeros(self.d)
 
     def get_action(self, arms):
+
         K = self.K
+
         self.UCBs = np.zeros(K)
 
         # IN THIS SOLUTION we have replaced the exploration parameter given in the notebook with a tighter one
@@ -298,4 +301,6 @@ class LinTS(Agent):
         pass
 
     def name(self):
+
         return "LinTS"
+
