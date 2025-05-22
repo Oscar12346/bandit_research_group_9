@@ -80,13 +80,13 @@ class AdversarialMultiArmedBandit:
 
 #  Runnable for Multi armed bandit environments (this includes adversarial ones)
 if __name__ == "__main__":
-    K = 2  # number of arms
+    K = 3  # number of arms
 
     # Example of normal MAB env initialization
-    adversary = DeceptiveAdversary()
+    adversary = DeceptiveAdversary(K)
     random_mab_env = Adversarial_MAB_env(K, adversary)
 
-    T = 1000 # Horizon
+    T = 100 # Horizon
     N = 1  # number of simulations
 
     # Visualization
@@ -99,9 +99,9 @@ if __name__ == "__main__":
     exp3_4 = Exp3(K, lr=0.9)
     eps_greedy = EpsilonGreedy(K, 0.01)
     amab = AdversarialMultiArmedBandit()
-    experiment = amab.experiment_mab(random_mab_env, [exp3, exp3_2, exp3_3, exp3_4, eps_greedy], N=N, T=T, mode="reward")
+    experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="regret")
 
-    display.plot_result(experiment, q=10, mode="reward", cumulative=False)
+    display.plot_result(experiment, q=10, mode="regret", cumulative=True)
 
     # greedy = bandit_solutions.EpsilonGreedy(K, eps=0.1)
     #
