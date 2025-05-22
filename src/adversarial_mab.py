@@ -1,11 +1,13 @@
 import numpy as np
 
+from src.adversaries.deceptive_adversary import DeceptiveAdversary
 from src.agents.agent import Exp3
 from src.display import display
-from src.environments.environment import MAB_env, Random_Adversarial_MAB_env
+from src.environments.environment import *
+from src.environments.adversarial_mab_env import *
 
 
-class MultiArmedBandit:
+class AdversarialMultiArmedBandit:
     def __init__(self):
         pass
 
@@ -24,6 +26,7 @@ class MultiArmedBandit:
         regrets = np.zeros((N, T))
         pseudo_regrets = np.zeros((N, T))
         avg_rewards = np.zeros((N, T))
+        adversary = environment.get_adversary()
 
         for n in range(N):
             agent.reset()
@@ -34,12 +37,12 @@ class MultiArmedBandit:
 
                 # compute instantaneous reward  and (pseudo) regret
                 rewards[n, t] = reward
-                means = environment.get_means()
-                best_reward = np.max(means)
+                # means = environment.get_means()
+                best_reward = adversary.get_best_reward()
                 regrets[
                     n, t] = best_reward - reward  # this can be negative due to the noise, but on average it's positive
-                avg_rewards[n, t] = means[action]
-                pseudo_regrets[n, t] = best_reward - means[action]
+                avg_rewards[n, t] = 0
+                pseudo_regrets[n, t] = 0
 
         return agent.name(), rewards, regrets, avg_rewards, pseudo_regrets
 
@@ -75,24 +78,22 @@ class MultiArmedBandit:
 
 #  Runnable for Multi armed bandit environments (this includes adversarial ones)
 if __name__ == "__main__":
-    K = 3  # number of arms
+    K = 2  # number of arms
 
     # Example of normal MAB env initialization
-    reward_dist = np.array([0.1, 0.5, 0.9])
-    mab_env = MAB_env(reward_dist)  # We don't know the reward distributions in advance!
-
-    random_mab_env = Random_Adversarial_MAB_env(K)
+    adversary = DeceptiveAdversary()
+    random_mab_env = Adversarial_MAB_env(K, adversary)
 
     T = 1000  # Horizon
-    N = 50  # number of simulations
+    N = 1  # number of simulations
 
     # Visualization
     Nsub = 100  # Subsampled points
     tsav = range(2, T, Nsub)
 
     exp3 = Exp3(K)
-    mab = MultiArmedBandit()
-    experiment = mab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="reward")
+    amab = AdversarialMultiArmedBandit()
+    experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="reward")
 
     display.plot_result(experiment, q=10, mode="reward", cumulative=False)
 
