@@ -37,7 +37,6 @@ class Exp3(Agent):
       # Update probability distribution
       weights = np.exp(self.estimated_rewards * self.lr)
       self.prob_dist = weights / np.sum(weights)
-      print(f'prob distribution: {self.prob_dist}')
       # Sample arm from the probability distribution
       action = np.random.choice(self.K, p=self.prob_dist)
       self.last_action = action  # store for update
@@ -45,13 +44,17 @@ class Exp3(Agent):
 
   def receive_reward(self, chosen_arm, reward):
       P_ti = self.prob_dist[chosen_arm]
-      print(f'chosen arm: {chosen_arm}')
-      print(f'reward is: {reward}')
+
       estimated_reward = (1 - reward) / P_ti
-      print(f'estimated reward: {estimated_reward}')
+
       # Update S_hat as per: Ŝ_ti = Ŝ_{t−1,i} + 1 - I{At=i} * (Xt / Pt[i])
-      self.estimated_rewards[chosen_arm] += 1 - estimated_reward
-      print(f'estimated reward total: {self.estimated_rewards}')
+      for i in range(len(self.estimated_rewards)):
+          if i == chosen_arm:
+              self.estimated_rewards[i] += 1 - estimated_reward
+          else:
+              self.estimated_rewards[i] += 1
+
+
       self.t += 1
 
   def name(self):
