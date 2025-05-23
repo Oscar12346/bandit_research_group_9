@@ -40,7 +40,7 @@ class AdversarialMultiArmedBandit:
                 # compute instantaneous reward  and (pseudo) regret
                 rewards[n, t] = reward
                 # means = environment.get_means()
-                best_reward = adversary.get_best_reward()
+                best_reward = adversary.get_best_reward(t)
                 regrets[
                     n, t] = best_reward - reward  # this can be negative due to the noise, but on average it's positive
                 avg_rewards[n, t] = 0

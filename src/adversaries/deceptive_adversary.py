@@ -19,23 +19,18 @@ class DeceptiveAdversary(Adversary):
     def get_reward(self, action: int, context: ndarray) -> float:
         t = len(self.history)
 
-        # Implementation now expects that there are 2 actions,
-        # when we extend this Adversary to have knowledge about the amount of actions we can extend
+        reward = self.get_arm_reward(action, context, t)
+        self.update_history(action, reward)
+        return reward
+
+    def get_arm_reward(self, action: int, context: ndarray, t: int) -> float:
         if t < 25:
-            # Make it seem that action 0 is really good and the rest worse in the first 500 timesteps
-            reward = 1.0 if action == self.best_arm else 0.25
-            self.update_history(action, reward)
-            return reward
+            return 0.9 if action == self.best_arm else 0.25
         else:
-            # Now we expose which action is actually the best, which is action 1
-            # All other actions receive no reward anymore
-            reward = 1.0 if action == self.switch_arm else 0.0
-            self.update_history(action, reward)
-            return reward
+            return 0.5 if action == self.switch_arm else 0.1
 
-
-    def get_best_reward(self):
-        return 1.0
+    def get_best_reward(self, t: int):
+        return self.get_arm_reward(self.switch_arm, None, t)
 
     def reset(self):
         self.history = []

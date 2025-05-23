@@ -48,11 +48,7 @@ class Exp3(Agent):
       estimated_reward = (1 - reward) / P_ti
 
       # Update S_hat as per: Ŝ_ti = Ŝ_{t−1,i} + 1 - I{At=i} * (Xt / Pt[i])
-      for i in range(len(self.estimated_rewards)):
-          if i == chosen_arm:
-              self.estimated_rewards[i] += 1 - estimated_reward
-          else:
-              self.estimated_rewards[i] += 1
+      self.estimated_rewards += 1 - np.eye(self.K, dtype=int)[chosen_arm] * estimated_reward
 
 
       self.t += 1
