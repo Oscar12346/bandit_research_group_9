@@ -8,7 +8,7 @@ class Agent:
     def reset(self):
         pass
 
-    def get_action(self, arms=None):
+    def get_action(self, context: np.ndarray) -> int:
         pass
 
     def receive_reward(self, action: int, reward: float):

@@ -35,3 +35,15 @@ class GaussianContext(Context):
         current_context_id = np.random.randint(self.n_contexts)
         self.current_action_set = self.features[current_context_id, :, :]
         return self.current_action_set
+    
+    def estimate_sigma(self, n_samples=10000):
+        samples = []
+        for _ in range(n_samples):
+            context = self.get_context()
+            arm_idx = np.random.randint(self.n_arms)
+            x = context[arm_idx]
+            samples.append(x)
+            
+        samples = np.array(samples)  # shape (n_samples, n_features)
+        sigma = np.cov(samples, rowvar=False)  # covariance matrix of shape (n_features, n_features)
+        return sigma
