@@ -6,5 +6,3 @@ class Context:
 
     def get_context(self) -> np.ndarray:
         pass
-    def get_action_set(self):
-        pass
