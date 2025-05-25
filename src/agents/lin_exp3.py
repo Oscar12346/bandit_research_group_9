@@ -4,7 +4,7 @@ from src.agents.agent import Agent
 
 class LinExp3Agent(Agent):
 
-    def __init__(self, name: str, K: int, d: int, sigma: np.ndarray, eta: float = 0.1, gamma: float = 0.1):
+    def __init__(self, name: str, K: int, d: int, sigma: np.ndarray, eta: float = 0.1, gamma: float = 0.1, epsilon: float = 0.0):
         self.name = name
         self.K = K
         self.d = d
@@ -12,6 +12,7 @@ class LinExp3Agent(Agent):
         self.sigma_inv = np.linalg.inv(sigma)
         self.eta = eta
         self.gamma = gamma
+        self.epsilon = epsilon
         
         # Cumulative estimators Theta for each arm (K x d)
         self.theta = np.zeros((self.K, self.d))

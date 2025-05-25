@@ -1,3 +1,4 @@
+import numpy as np
 from src.agents.lin_exp3 import LinExp3Agent
 
 class RobustLinExp3Agent(LinExp3Agent):
@@ -13,3 +14,18 @@ class RobustLinExp3Agent(LinExp3Agent):
 
         # Update cumulative estimator for chosen action
         self.theta[action] += theta_hat
+
+    def compute_regret_bound(self, T: int) -> float:
+        K = self.K
+        d = self.d
+        eta = self.eta
+        gamma = self.gamma
+        epsilon = self.epsilon
+
+        term1 = 2 * np.sqrt(d) * epsilon * T
+        term2 = 2 * gamma * T
+        term3 = (2 * eta * K * d * T) / gamma
+        term4 = (np.log(K)) / eta
+
+        regret_bound = term1 + term2 + term3 + term4
+        return regret_bound
