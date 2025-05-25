@@ -1,8 +1,8 @@
 import numpy as np
 
-from adversaries.adversary import Adversary
-from environments.environment import Environment
-from contexts.context import Context
+from src.adversaries.adversary import Adversary
+from src.environments.environment import Environment
+from src.contexts.context import Context
 
 class AdversarialContextualEnv(Environment):
 
