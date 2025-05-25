@@ -1,7 +1,8 @@
 import numpy as np
 
-from agents.agent import Agent, Exp3
-from environments.adversarial_contextual_env import AdversarialContextualEnv
+from src.agents.agent import Agent
+from src.agents.exp3 import Exp3
+from src.environments.adversarial_contextual_env import AdversarialContextualEnv
 from src.adversaries.deceptive_adversary import DeceptiveAdversary
 from src.agents.old_agents import LinEpsilonGreedy
 from src.contexts.gaussian_context import GaussianContext
