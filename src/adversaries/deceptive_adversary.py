@@ -29,7 +29,7 @@ class DeceptiveAdversary(Adversary):
         else:
             return 0.5 if action == self.switch_arm else 0.1
         
-    def get_mean_rewards(self, context: ndarray, action: int) -> ndarray:
+    def get_mean_rewards(self, context: ndarray) -> ndarray:
         mean_rewards = np.zeros(self.K)
         t = len(self.history)
 

@@ -17,5 +17,5 @@ class AdversarialContextualEnv(Environment):
     def get_context(self) -> np.ndarray:
         return self.context.get_context()
     
-    def get_mean_rewards(self, context: np.ndarray, action: int) -> np.ndarray:
-        return self.adversary.get_mean_rewards(context, action)
+    def get_mean_rewards(self, context: np.ndarray) -> np.ndarray:
+        return self.adversary.get_mean_rewards(context)

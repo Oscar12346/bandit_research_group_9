@@ -29,14 +29,22 @@ class LinExp3Agent(Agent):
     def set_context(self, context: np.ndarray):
         self.current_context = context
 
-    def compute_weight(self, ctx_t: np.ndarray, action: int) -> float:
-        dot_product = np.dot(ctx_t, self.theta[action])
-        return np.exp(-self.eta * dot_product)
-    
     def get_policy(self, ctx_t: np.ndarray) -> np.ndarray:
-        weights = np.array([self.compute_weight(ctx_t, a) for a in range(self.K)])
-        weights_sum = weights.sum()
-        norm_weights = weights / weights_sum
+        scores = -self.eta * np.dot(self.theta, ctx_t)  
+
+        # Stabilize: subtract max for numerical stability
+        max_score = np.max(scores)
+        stable_scores = scores - max_score
+        exp_scores = np.exp(stable_scores)
+
+        # fallback: uniform policy
+        weights_sum = np.sum(exp_scores)
+        if weights_sum <= 0 or np.isnan(weights_sum):
+            norm_weights = np.ones(self.K) / self.K
+        else:
+            norm_weights = exp_scores / weights_sum
+
+        # Policy calculation
         policy = (1 - self.gamma) * norm_weights + self.gamma / self.K
         return policy
 

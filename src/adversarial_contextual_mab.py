@@ -33,7 +33,7 @@ class AdversarialContextualMAB:
 
                 # compute instantaneous reward  and (pseudo) regret
                 rewards[n,t] = reward
-                means = environment.get_mean_rewards(context, action)
+                means = environment.get_mean_rewards(context)
                 best_reward = np.max(means)
                 regrets[n,t]= best_reward - reward # this can be negative due to the noise, but on average it's positive
                 avg_rewards[n,t] = means[action]
