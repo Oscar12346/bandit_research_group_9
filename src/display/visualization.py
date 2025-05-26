@@ -9,7 +9,8 @@ class Visualization:
         title: str = "", 
         xlabel: str = "",
         ylabel: str = "",
-        baseline: np.ndarray = None  # new parameter
+        baseline: np.ndarray = None,
+        baseline_title: str = "Baseline"
     ):
         mean_values = np.mean(data, axis=0)
         std_values = np.std(data, axis=0)
@@ -31,7 +32,7 @@ class Visualization:
             baseline = baseline.flatten()  # ensure 1D
             if baseline.shape[0] != data.shape[1]:
                 raise ValueError(f"Baseline length {baseline.shape[0]} does not match data horizon {data.shape[1]}")
-            plt.plot(timesteps, baseline, label='Baseline', color='r', linestyle='--')
+            plt.plot(timesteps, baseline, label=baseline_title, color='r', linestyle='--')
 
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
