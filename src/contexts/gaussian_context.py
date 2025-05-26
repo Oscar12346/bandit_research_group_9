@@ -4,7 +4,7 @@ from src.contexts.context import Context
 
 class GaussianContext(Context):
 
-    def __init__(self, n_contexts: int, n_arms: int, n_features: int):
+    def __init__(self, n_contexts: int, n_features: int):
         
         self.n_contexts = n_contexts
         self.n_features = n_features
