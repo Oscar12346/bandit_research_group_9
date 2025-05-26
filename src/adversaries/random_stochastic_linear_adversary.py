@@ -1,6 +1,6 @@
 import numpy as np
 
-class LinearAdversary:
+class RandomStochasticLinearAdversary:
     def __init__(self, num_actions: int, context_dim: int, horizon: int, noise_mean: float = 0.0, noise_std: float = 0.0):
         self.num_actions = num_actions
         self.context_dim = context_dim
