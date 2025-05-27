@@ -17,6 +17,8 @@ class RandomStochasticLinearAdversary:
         theta = self.theta_sequence[self.t, action]
         reward = np.dot(context, theta)
         reward += np.random.normal(self.noise_mean, self.noise_std)
+
+        self.step()
         return reward
 
     def get_best_reward(self, context: np.ndarray) -> float:
