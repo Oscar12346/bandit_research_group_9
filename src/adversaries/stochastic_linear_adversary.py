@@ -10,11 +10,17 @@ class StochasticLinearAdversary:
         # Generate a different theta_t,a for each timestep and action
         self.theta = np.random.randn(num_actions, context_dim)
 
+        # Normalize theta vectors to have norm <= 1 (or some R)
+        self.theta /= np.maximum(np.linalg.norm(self.theta, axis=1, keepdims=True), 1.0)
+
     def get_reward(self, action: int, context: np.ndarray) -> float:
         """Returns reward for a given action and context at time t."""
         theta = self.theta[action]
         reward = np.dot(context, theta)
         reward += np.random.normal(self.noise_mean, self.noise_std)
+
+        # Clip the reward to be in the range [-1, 1]
+        reward = max(min(reward, 1), -1)
         return reward
 
     def get_best_reward(self, context: np.ndarray) -> float:

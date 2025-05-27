@@ -31,12 +31,14 @@ class AdversarialContextualMAB:
                 reward = environment.get_reward(action, context)
                 agent.receive_reward(action,reward)
 
-                # compute instantaneous reward  and (pseudo) regret
-                rewards[n,t] = reward
+                # Get reward info
                 means = environment.get_mean_rewards(context)
                 best_reward = np.max(means)
-                regrets[n,t]= best_reward - reward
+
+                # Save data
+                rewards[n,t] = reward
                 avg_rewards[n,t] = means[action]
+                regrets[n,t]= best_reward - reward
                 pseudo_regrets[n,t] = best_reward - means[action]
 
                 # Compute cumulatives

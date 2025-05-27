@@ -12,11 +12,18 @@ class RandomStochasticLinearAdversary:
         # Generate a different theta_t,a for each timestep and action
         self.theta_sequence = np.random.randn(horizon, num_actions, context_dim)
 
+        # Normalize each vector to have norm at most 1
+        norms = np.linalg.norm(self.theta_sequence, axis=2, keepdims=True)
+        self.theta_sequence = self.theta_sequence / np.maximum(norms, 1.0)
+
     def get_reward(self, action: int, context: np.ndarray) -> float:
         """Returns reward for a given action and context at time t."""
         theta = self.theta_sequence[self.t, action]
         reward = np.dot(context, theta)
         reward += np.random.normal(self.noise_mean, self.noise_std)
+
+        # Clip reward
+        reward = max(min(reward, 1), -1)
 
         self.step()
         return reward
