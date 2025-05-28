@@ -8,13 +8,9 @@ class DeceptiveAdversary(Adversary):
     def __init__(self, K):
         super().__init__()
 
-        self.history = []
         self.K = K
         self.best_arm = np.random.choice(K)
         self.switch_arm = np.random.choice(np.setdiff1d(range(self.K), self.best_arm))
-
-    def update_history(self, action, reward):
-        self.history.append((action, reward))
 
     def get_reward(self, action: int, context: ndarray) -> float:
         t = len(self.history)
@@ -39,6 +35,3 @@ class DeceptiveAdversary(Adversary):
 
     def get_best_reward(self, t: int):
         return self.get_arm_reward(self.switch_arm, None, t)
-
-    def reset(self):
-        self.history = []
