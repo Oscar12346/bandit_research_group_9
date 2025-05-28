@@ -1,7 +1,7 @@
 import numpy as np
 
 from src.adversaries.deceptive_adversary import DeceptiveAdversary
-from src.agents.agent import Exp3
+from src.agents.exp3 import Exp3
 from src.agents.old_agents import EpsilonGreedy
 from src.display import display
 from src.environments.environment import *
