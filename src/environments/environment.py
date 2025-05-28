@@ -9,7 +9,7 @@ class Environment:
     def get_reward(self, action: int) -> float:
         pass
 
-    def get_mean_rewards(self) -> list:
+    def get_mean_rewards(self, context: np.ndarray) -> np.ndarray:
         pass
 
     def get_adversary(self):

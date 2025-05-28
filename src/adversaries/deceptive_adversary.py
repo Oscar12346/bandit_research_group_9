@@ -24,6 +24,14 @@ class DeceptiveAdversary(Adversary):
             return 0.9 if action == self.best_arm else 0.25
         else:
             return 0.5 if action == self.switch_arm else 0.1
+        
+    def get_mean_rewards(self, context: ndarray) -> ndarray:
+        mean_rewards = np.zeros(self.K)
+        t = len(self.history)
+
+        for arm in range(self.K):
+            mean_rewards[arm] = self.get_arm_reward(arm, context, t)
+        return mean_rewards
 
     def get_best_reward(self, t: int):
         return self.get_arm_reward(self.switch_arm, None, t)

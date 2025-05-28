@@ -1,8 +1,8 @@
 import numpy as np
 
-from adversaries.adversary import Adversary
-from environments.environment import Environment
-from contexts.context import Context
+from src.adversaries.adversary import Adversary
+from src.environments.environment import Environment
+from src.contexts.context import Context
 
 class AdversarialContextualEnv(Environment):
 
@@ -10,14 +10,12 @@ class AdversarialContextualEnv(Environment):
 
         self.adversary = adversary
         self.context = context
-
-
     
     def get_reward(self, action: int, context: np.ndarray) -> float:
         return self.adversary.get_reward(action, context)
     
     def get_context(self) -> np.ndarray:
         return self.context.get_context()
-
-    def get_action_set(self):
-        return self.context.get_action_set()
+    
+    def get_mean_rewards(self, context: np.ndarray) -> np.ndarray:
+        return self.adversary.get_mean_rewards(context)

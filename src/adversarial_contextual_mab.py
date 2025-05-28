@@ -1,25 +1,22 @@
 import numpy as np
 
-from agents.agent import Agent, Exp3
-from environments.adversarial_contextual_env import AdversarialContextualEnv
-from src.adversaries.deceptive_adversary import DeceptiveAdversary
-from src.agents.old_agents import LinEpsilonGreedy
-from src.contexts.gaussian_context import GaussianContext
-from src.display import display
-
+from src.agents.agent import Agent
+from src.environments.adversarial_contextual_env import AdversarialContextualEnv
 
 class AdversarialContextualMAB:
 
     def __init__(self):
         pass 
 
-    def play(self, agent: Agent, environment: AdversarialContextualEnv, num_sim: int, horizon: int):
+    def play(self, agent: Agent, environment: AdversarialContextualEnv, num_sim: int, horizon: int) -> tuple:
         
         # init results
         rewards = np.zeros((num_sim, horizon))
+        avg_rewards = np.zeros((num_sim, horizon))
         regrets = np.zeros((num_sim, horizon))
         pseudo_regrets = np.zeros((num_sim, horizon))
-        avg_rewards = np.zeros((num_sim, horizon))
+        cumulative_regrets = np.zeros((num_sim, horizon))
+        cumulative_pseudo_regrets = np.zeros((num_sim, horizon))
 
         # Iterate over simulations
         for n in range(num_sim):
@@ -30,50 +27,27 @@ class AdversarialContextualMAB:
 
                 # Interact with the environment
                 context = environment.get_context()
-                # action_set = environment.get_action_set()
-                action = agent.get_action()
+                action = agent.get_action(context)
                 reward = environment.get_reward(action, context)
                 agent.receive_reward(action,reward)
 
-                # compute instantaneous reward  and (pseudo) regret
-                rewards[n,t] = reward
-                means = environment.get_mean_rewards()
+                # Get reward info
+                means = environment.get_mean_rewards(context)
                 best_reward = np.max(means)
-                regrets[n,t]= best_reward - reward # this can be negative due to the noise, but on average it's positive
+
+                # Save data
+                rewards[n,t] = reward
                 avg_rewards[n,t] = means[action]
+                regrets[n,t]= best_reward - reward
                 pseudo_regrets[n,t] = best_reward - means[action]
 
-        return agent.name, rewards, regrets, avg_rewards, pseudo_regrets
+                # Compute cumulatives
+                if t > 0: 
+                    cumulative_regrets[n,t] = cumulative_regrets[n,t-1] + regrets[n,t]
+                    cumulative_pseudo_regrets[n,t] = cumulative_pseudo_regrets[n,t-1] + pseudo_regrets[n,t]
 
-#     Runnable for contextual bandit environments
-if __name__ == "__main__":
-    d = 7  # Feature dimension
-    K = 2  # Number of arms per timestep (number of website versions)
-    n_contexts = 2  # Number of contexts (types of users)
-    theta = np.random.normal(0., 1., size=d)
-    theta = theta / np.linalg.norm(theta)
+                else: 
+                    cumulative_regrets[n,t] = regrets[n,t]
+                    cumulative_pseudo_regrets[n,t] = pseudo_regrets[n,t]
 
-    T = 1000  # Finite Horizon
-    N = 50  # Monte Carlo simulations
-
-    # The parameter theta is unknown, but we know it's been normalized (the l2 norm of theta is 1)
-    # Feature vectors are also normalized
-    # lin_env = LinearBandit(theta, K, n_contexts)
-
-    # Save subsampled points for Figures
-    Nsub = 100
-    tsav = range(2, T, Nsub)
-    # Choice of percentile display
-    q = 10
-
-    exp3 = Exp3(K)
-
-    acmab = AdversarialContextualMAB()
-    adversary = DeceptiveAdversary()
-    context = GaussianContext(n_contexts, K, d)
-    # Example contextual algorithm
-    adversarial_env = AdversarialContextualEnv(adversary, context)
-    exp3_experiment = acmab.play(exp3, adversarial_env, num_sim=N, horizon=T)
-    # lin_eps_greedy = LinEpsilonGreedy(d, 1.0, 0.1)
-    # lin_eps_greedy_experiment = acmab.play(lin_eps_greedy, adversarial_env , num_sim=N, horizon=T)
-    # # display.plot_result(lin_eps_greedy_experiment)
+        return rewards, regrets, avg_rewards, pseudo_regrets, cumulative_regrets, cumulative_pseudo_regrets
