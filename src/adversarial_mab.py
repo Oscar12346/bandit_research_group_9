@@ -40,7 +40,7 @@ class AdversarialMultiArmedBandit:
                 # compute instantaneous reward  and (pseudo) regret
                 rewards[n, t] = reward
                 # means = environment.get_means()
-                best_reward = adversary.get_best_reward()
+                best_reward = adversary.get_best_reward(t)
                 regrets[
                     n, t] = best_reward - reward  # this can be negative due to the noise, but on average it's positive
                 avg_rewards[n, t] = 0
@@ -83,10 +83,10 @@ if __name__ == "__main__":
     K = 2  # number of arms
 
     # Example of normal MAB env initialization
-    adversary = DeceptiveAdversary()
+    adversary = DeceptiveAdversary(K)
     random_mab_env = Adversarial_MAB_env(K, adversary)
 
-    T = 1000 # Horizon
+    T = 100 # Horizon
     N = 1  # number of simulations
 
     # Visualization
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     exp3_4 = Exp3(K, lr=0.9)
     eps_greedy = EpsilonGreedy(K, 0.01)
     amab = AdversarialMultiArmedBandit()
-    experiment = amab.experiment_mab(random_mab_env, [exp3, exp3_2, exp3_3, exp3_4, eps_greedy], N=N, T=T, mode="reward")
+    experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="reward")
 
     display.plot_result(experiment, q=10, mode="reward", cumulative=False)
 
