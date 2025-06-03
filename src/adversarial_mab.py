@@ -1,6 +1,7 @@
 import numpy as np
 
 from src.adversaries.deceptive_adversary import DeceptiveAdversary
+from src.adversaries.probabilistic_adversary import ProbabilisticAdversary
 from src.agents.exp3 import Exp3
 from src.agents.old_agents import EpsilonGreedy
 from src.display import display
@@ -39,6 +40,7 @@ class AdversarialMultiArmedBandit:
 
                 # compute instantaneous reward  and (pseudo) regret
                 rewards[n, t] = reward
+
                 # means = environment.get_means()
                 best_reward = adversary.get_best_reward(t)
                 regrets[
@@ -80,14 +82,14 @@ class AdversarialMultiArmedBandit:
 
 #  Runnable for Multi armed bandit environments (this includes adversarial ones)
 if __name__ == "__main__":
-    K = 2  # number of arms
-
+    K = 5  # number of arms
+    T = 100  # Horizon
+    N = 1  # number of simulations
     # Example of normal MAB env initialization
-    adversary = DeceptiveAdversary(K)
+    adversary = ProbabilisticAdversary(K, T)
     random_mab_env = Adversarial_MAB_env(K, adversary)
 
-    T = 100 # Horizon
-    N = 1  # number of simulations
+
 
     # Visualization
     Nsub = 100  # Subsampled points
@@ -99,9 +101,9 @@ if __name__ == "__main__":
     exp3_4 = Exp3(K, lr=0.9)
     eps_greedy = EpsilonGreedy(K, 0.01)
     amab = AdversarialMultiArmedBandit()
-    experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="reward")
+    experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="regret")
 
-    display.plot_result(experiment, q=10, mode="reward", cumulative=False)
+    display.plot_result(experiment, q=10, mode="regret", cumulative=False)
 
     # greedy = bandit_solutions.EpsilonGreedy(K, eps=0.1)
     #
