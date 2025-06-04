@@ -6,7 +6,7 @@ plt.rcParams["animation.html"] = "jshtml"
 import seaborn as sns
 colors = sns.color_palette('colorblind')
 
-def plot_result(regrets, logscale=False, lb=None, q=10, mode='regret', cumulative=True):
+def plot_result(regrets, logscale=False, lb=None, q=10, mode='regret', cumulative=True, bounds_per_timestep = None):
     """
     regrets must be a dict {'agent_id':regret_table}
     """
@@ -37,6 +37,9 @@ def plot_result(regrets, logscale=False, lb=None, q=10, mode='regret', cumulativ
 
     if lb is not None:
         plt.plot(np.arange(T), lb, color='black', marker='*', markevery=int(T / 10))
+
+    if bounds_per_timestep is not None:
+        plt.plot(np.arange(T), bounds_per_timestep, color='gray', linestyle='--', label='Theoretical Bound')
 
     plt.xlabel('time steps')
     header = "Cumulative " if cumulative else ""

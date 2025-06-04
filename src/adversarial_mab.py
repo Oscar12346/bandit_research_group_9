@@ -42,9 +42,10 @@ class AdversarialMultiArmedBandit:
                 rewards[n, t] = reward
 
                 # means = environment.get_means()
+            for t in range(T):
                 best_reward = adversary.get_best_reward(t)
                 regrets[
-                    n, t] = best_reward - reward  # this can be negative due to the noise, but on average it's positive
+                    n, t] = best_reward - rewards[n, t]  # this can be negative due to the noise, but on average it's positive
                 avg_rewards[n, t] = 0
                 pseudo_regrets[n, t] = 0
 
@@ -82,9 +83,9 @@ class AdversarialMultiArmedBandit:
 
 #  Runnable for Multi armed bandit environments (this includes adversarial ones)
 if __name__ == "__main__":
-    K = 5  # number of arms
-    T = 100  # Horizon
-    N = 1  # number of simulations
+    K = 10  # number of arms
+    T = 1000  # Horizon
+    N = 100  # number of simulations
     # Example of normal MAB env initialization
     adversary = ProbabilisticAdversary(K, T)
     random_mab_env = Adversarial_MAB_env(K, adversary)
@@ -94,8 +95,9 @@ if __name__ == "__main__":
     # Visualization
     Nsub = 100  # Subsampled points
     tsav = range(2, T, Nsub)
-
-    exp3 = Exp3(K)
+    lr = np.sqrt(np.log(K)/(T*K))
+    bounds_per_timestep = np.array([2*np.sqrt(t*K*np.log(K)) for t in range(T)])
+    exp3 = Exp3(K, lr=lr)
     exp3_2 = Exp3(K, lr=0.2)
     exp3_3 = Exp3(K, lr=0.3)
     exp3_4 = Exp3(K, lr=0.9)
@@ -103,7 +105,7 @@ if __name__ == "__main__":
     amab = AdversarialMultiArmedBandit()
     experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="regret")
 
-    display.plot_result(experiment, q=10, mode="regret", cumulative=False)
+    display.plot_result(experiment, q=10, mode="regret", cumulative=True, bounds_per_timestep=bounds_per_timestep)
 
     # greedy = bandit_solutions.EpsilonGreedy(K, eps=0.1)
     #
