@@ -18,7 +18,7 @@ class RobustLinExp3Agent(LinExp3Agent):
     def compute_regret_bound(self, T: int) -> float:
         K = self.K
         d = self.d
-        eta = self.eta
+        eta = T**(-2/3)*(K*d)**(-1/3)*np.log(K)**(2/3) if T > 0 else 1.0
         gamma = self.gamma
         epsilon = self.epsilon
 
