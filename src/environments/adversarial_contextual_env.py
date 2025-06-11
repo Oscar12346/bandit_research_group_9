@@ -19,3 +19,8 @@ class AdversarialContextualEnv(Environment):
     
     def get_mean_rewards(self, context: np.ndarray) -> np.ndarray:
         return self.adversary.get_mean_rewards(context)
+
+    def get_best_reward(self, context: np.ndarray) -> float:
+        return self.adversary.get_best_reward()
+    def reset(self):
+        self.adversary.reset()

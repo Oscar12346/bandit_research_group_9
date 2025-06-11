@@ -1,7 +1,7 @@
 import numpy as np
 
 from src.adversaries.deceptive_adversary import DeceptiveAdversary
-from src.adversaries.probabilistic_adversary import ProbabilisticAdversary
+from src.adversaries.probabilistic_adversary import ProbabilisticAdversary, TargetedProbabilityExploitationAdversary, InverseProbabilityRewardAdversary
 from src.agents.exp3 import Exp3
 from src.agents.old_agents import EpsilonGreedy
 from src.display import display
@@ -83,29 +83,42 @@ class AdversarialMultiArmedBandit:
 
 #  Runnable for Multi armed bandit environments (this includes adversarial ones)
 if __name__ == "__main__":
-    K = 10  # number of arms
-    T = 1000  # Horizon
+
+    K = 5  # number of arms
+    T = 10000  # Horizon
     N = 100  # number of simulations
     # Example of normal MAB env initialization
-    adversary = ProbabilisticAdversary(K, T)
-    random_mab_env = Adversarial_MAB_env(K, adversary)
-
-
-
+    strats = [0,1]
+    experiments = {}
     # Visualization
     Nsub = 100  # Subsampled points
     tsav = range(2, T, Nsub)
-    lr = np.sqrt(np.log(K)/(T*K))
-    bounds_per_timestep = np.array([2*np.sqrt(t*K*np.log(K)) for t in range(T)])
-    exp3 = Exp3(K, lr=lr)
-    exp3_2 = Exp3(K, lr=0.2)
-    exp3_3 = Exp3(K, lr=0.3)
-    exp3_4 = Exp3(K, lr=0.9)
-    eps_greedy = EpsilonGreedy(K, 0.01)
+    lr = np.sqrt(np.log(K) / (T * K))
     amab = AdversarialMultiArmedBandit()
-    experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="regret")
+    bounds_per_timestep = np.array([2 * np.sqrt(t * K * np.log(K)) for t in range(T)])
+    exp3 = Exp3(K, lr=lr)
+    for strat in strats:
+        adversary = InverseProbabilityRewardAdversary(K, T, initial_reward_strategy=strat)
+        random_mab_env = Adversarial_MAB_env(K, adversary)
 
-    display.plot_result(experiment, q=10, mode="regret", cumulative=True, bounds_per_timestep=bounds_per_timestep)
+        experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="regret")
+
+        # Modify the label to include K and strategy
+        for agent_name, data in experiment.items():
+            label = f"{agent_name}_K={K}_strat={strat}"
+            experiments[label] = data
+
+    display.plot_result(experiments, q=10, mode="regret", cumulative=True,
+                        bounds_per_timestep=bounds_per_timestep)
+
+
+
+
+    # eps_greedy = EpsilonGreedy(K, 0.01)
+    #
+    # experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="regret")
+    #
+    # display.plot_result(experiment, q=10, mode="regret", cumulative=True, bounds_per_timestep=bounds_per_timestep)
 
     # greedy = bandit_solutions.EpsilonGreedy(K, eps=0.1)
     #

@@ -40,4 +40,4 @@ class Exp3(Agent):
       self.t += 1
 
   def name(self):
-      return f'Exp3(lr={self.lr})'
+      return f'Exp3(K={self.K})'

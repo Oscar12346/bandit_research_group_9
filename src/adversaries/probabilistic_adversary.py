@@ -11,44 +11,42 @@ class ProbabilisticAdversary(Adversary):
         self.probabilities = np.ones(K) / K
         self.T = T
         self.rewards = np.zeros(shape=(K, T))
-        # self.rewards[:, 0] = 1 - self.probabilities
+        self.rewards[:, 0] = 1 - self.probabilities
         self.estimated_rewards = np.zeros(K)
-        self.best_arm = np.argmax(np.sum(self.rewards, axis=1))
+        self.best_arm = 0
         self.eta = np.sqrt(np.log(K) / (T*K))
-        self.lb = 1/4
-        self.ub = 1/2
 
-    def get_reward(self, action: int, context: np.ndarray) -> float:
-        t = len(self.history)
-
-        reward = self.rewards[action, t]
-
-        # print(f'action: {action}, reward: {reward}, t: {t}')
-        # print(f'prob: {self.probabilities}')
-        self.update_probabilities(action, reward, t)
-        self.update_history(action, reward)
-
-        if t < self.T-1:
-            sorted_indices = np.argsort(self.probabilities)
-            cumulative_prob = 0.0
-            reward_indices = []
-
-            for i in sorted_indices:
-                prob = self.probabilities[i]
-                if cumulative_prob + prob > self.lb:
-                    break
-                if cumulative_prob + prob <= self.ub:
-                    reward_indices.append(i)
-                    cumulative_prob += prob
-                else:
-                    break
-
-            self.rewards[:, t + 1] = 0
-            self.rewards[reward_indices, t + 1] = 1
-
-        self.best_arm = np.argmax(np.sum(self.rewards, axis=1))
-
-        return reward
+    # def get_reward(self, action: int, context: np.ndarray) -> float:
+    #     t = len(self.history)
+    #
+    #     reward = self.rewards[action, t]
+    #
+    #     # print(f'action: {action}, reward: {reward}, t: {t}')
+    #     # print(f'prob: {self.probabilities}')
+    #     self.update_probabilities(action, reward, t)
+    #     self.update_history(action, reward)
+    #
+    #     if t < self.T-1:
+    #         sorted_indices = np.argsort(self.probabilities)
+    #         cumulative_prob = 0.0
+    #         reward_indices = []
+    #
+    #         for i in sorted_indices:
+    #             prob = self.probabilities[i]
+    #             if cumulative_prob + prob > self.lb:
+    #                 break
+    #             if cumulative_prob + prob <= self.ub:
+    #                 reward_indices.append(i)
+    #                 cumulative_prob += prob
+    #             else:
+    #                 break
+    #
+    #         self.rewards[:, t + 1] = 0
+    #         self.rewards[reward_indices, t + 1] = 1
+    #
+    #     self.best_arm = np.argmax(np.sum(self.rewards, axis=1))
+    #
+    #     return reward
 
     def get_best_reward(self, t):
         # t = len(self.history)
@@ -81,10 +79,88 @@ class ProbabilisticAdversary(Adversary):
         super().reset()
         self.probabilities = np.ones(self.K) / self.K
         self.rewards = np.zeros(shape=(self.K, self.T))
-        self.rewards[:, 0] = 1 - self.probabilities / self.K
-        self.total_rewards = np.zeros(self.K)
+        self.rewards[:, 0] = 1 - self.probabilities
         self.best_arm = np.argmax(np.sum(self.rewards, axis=1))
 
         self.estimated_rewards = np.zeros(self.K)
 
+class TargetedProbabilityExploitationAdversary(ProbabilisticAdversary):
+    def __init__(self, K,T, lb=1/4, ub=1/2):
+        super().__init__(K,T)
+
+        self.lb = lb
+        self.ub = ub
+
+    def get_reward(self, action: int, context: np.ndarray) -> float:
+        t = len(self.history)
+        reward = self.rewards[action, t]
+
+        # print(f'action: {action}, reward: {reward}, t: {t}')
+        # print(f'prob: {self.probabilities}')
+        self.update_probabilities(action, reward, t)
+        self.update_history(action, reward)
+
+
+        if t < self.T-1:
+            sorted_indices = np.argsort(self.probabilities)
+            cumulative_prob = 0.0
+            reward_indices = []
+
+            for i in sorted_indices:
+                prob = self.probabilities[i]
+                if cumulative_prob + prob > self.lb:
+                    break
+                if cumulative_prob + prob <= self.ub:
+                    reward_indices.append(i)
+                    cumulative_prob += prob
+                else:
+                    break
+
+            self.rewards[:, t + 1] = 0
+            self.rewards[reward_indices, t + 1] = 1
+
+        self.best_arm = np.argmax(np.sum(self.rewards, axis=1))
+
+        return reward
+
+
+
+class InverseProbabilityRewardAdversary(ProbabilisticAdversary):
+    def __init__(self, K,T, initial_reward_strategy=0):
+        super().__init__(K,T)
+        # initial reward strategy=0 is Random reward initialization
+        # initial reward strategy=1 is reward damping
+        self.initial_reward_strategy = initial_reward_strategy
+        self.switch = np.floor(min(T/10, 5*K))
+
+    def get_reward(self, action: int, context: np.ndarray) -> float:
+        t = len(self.history)
+
+        reward = self.rewards[action, t]
+
+        # print(f'action: {action}, reward: {reward}, t: {t}')
+        # print(f'prob: {self.probabilities}')
+        # print(f'rewards: {self.rewards[:, t]}')
+        self.update_probabilities(action, reward, t)
+        self.update_history(action, reward)
+
+        if t < self.switch:
+            if self.initial_reward_strategy == 0:
+                self.rewards[:, t + 1] = self.rewards[:, t]
+            elif self.initial_reward_strategy == 1:
+                self.rewards[:, t + 1] = np.minimum(self.rewards[:, t] + 0.02, 0.5)
+
+        elif t < self.T-1:
+            self.rewards[:, t + 1] = 1 - self.probabilities
+
+            self.best_arm = np.argmax(np.sum(self.rewards, axis=1))
+
+        return reward
+
+    def reset(self):
+        super().reset()
+        if self.initial_reward_strategy == 0:
+            self.rewards[:, 0] = np.random.uniform(0, 1, self.K)
+        else:
+            self.rewards[:, 0] = np.zeros(shape=self.K)
 

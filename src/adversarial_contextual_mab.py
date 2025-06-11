@@ -25,10 +25,9 @@ class AdversarialContextualMAB:
         # Iterate over simulations
         for n in range(num_sim):
             agent.reset()
-
+            environment.reset() # resets the adversary
             # Iterate over time steps
             for t in range(horizon):
-
                 # Interact with the environment
                 context = environment.get_context()
                 action = agent.get_action(context)
@@ -46,11 +45,10 @@ class AdversarialContextualMAB:
                 # pseudo_regrets[n,t] = best_reward - means[action]
 
                 # Compute cumulatives
-                if t > 0: 
+                if t > 0:
                     cumulative_regrets[n,t] = cumulative_regrets[n,t-1] + regrets[n,t]
                     # cumulative_pseudo_regrets[n,t] = cumulative_pseudo_regrets[n,t-1] + pseudo_regrets[n,t]
-
-                else: 
+                else:
                     cumulative_regrets[n,t] = regrets[n,t]
                     # cumulative_pseudo_regrets[n,t] = pseudo_regrets[n,t]
 
