@@ -21,16 +21,22 @@ class AdversarialContextualMAB:
         pseudo_regrets = np.zeros((num_sim, horizon))
         cumulative_regrets = np.zeros((num_sim, horizon))
         cumulative_pseudo_regrets = np.zeros((num_sim, horizon))
+        expected_regrets = np.zeros((num_sim, horizon))
 
         # Iterate over simulations
         for n in range(num_sim):
+            contexts = []
             agent.reset()
             environment.reset() # resets the adversary
+
             # Iterate over time steps
             for t in range(horizon):
                 # Interact with the environment
                 context = environment.get_context()
+                contexts.append(context)
+
                 action = agent.get_action(context)
+
                 reward = environment.get_reward(action, context)
                 agent.receive_reward(action,reward)
 
@@ -51,5 +57,14 @@ class AdversarialContextualMAB:
                 else:
                     cumulative_regrets[n,t] = regrets[n,t]
                     # cumulative_pseudo_regrets[n,t] = pseudo_regrets[n,t]
-
-        return rewards, regrets, avg_rewards, pseudo_regrets, cumulative_regrets, cumulative_pseudo_regrets
+            loss_vectors = environment.get_loss_vectors() #returns self.theta
+            for t in range(horizon):
+                context = contexts[t]
+                comparator_policy_action = np.argmin(context @ np.sum(loss_vectors, axis=0))
+                comparator_loss = context @ loss_vectors[t, comparator_policy_action]
+                expected_regret = comparator_loss - (-rewards[n,t])
+                if t > 0:
+                    expected_regrets[n,t] += expected_regrets[n, t-1] + expected_regret
+                else:
+                    expected_regrets[n,t] = expected_regret
+        return rewards, expected_regrets, avg_rewards, pseudo_regrets, cumulative_regrets, cumulative_pseudo_regrets

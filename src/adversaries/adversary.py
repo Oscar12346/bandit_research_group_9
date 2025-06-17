@@ -15,6 +15,8 @@ class Adversary:
 
     def get_mean_rewards(self, context: np.ndarray) -> np.ndarray:
         pass
+    def get_loss_vectors(self):
+        pass
     
     def reset(self):
         self.history = []

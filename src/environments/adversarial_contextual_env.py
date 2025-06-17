@@ -22,5 +22,7 @@ class AdversarialContextualEnv(Environment):
 
     def get_best_reward(self, context: np.ndarray) -> float:
         return self.adversary.get_best_reward()
+    def get_loss_vectors(self) -> np.ndarray:
+        return self.adversary.get_loss_vectors()
     def reset(self):
         self.adversary.reset()

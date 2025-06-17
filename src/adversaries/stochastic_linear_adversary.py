@@ -32,5 +32,8 @@ class StochasticLinearAdversary:
         """Returns mean reward for each action for a given context."""
         return self.theta @ context
 
+    def get_loss_vectors(self):
+        return self.theta
+
     def reset(self):
         """Resets the adversary for a new episode."""
