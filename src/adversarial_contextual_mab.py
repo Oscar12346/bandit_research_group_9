@@ -43,6 +43,8 @@ class AdversarialContextualMAB:
                 # Get reward info
                 means = environment.get_mean_rewards(context)
                 best_reward = np.max(means)
+                if reward > best_reward + 1e6:
+                    print(f'best_reward: {best_reward} actual reward: {reward}')
 
                 # Save data
                 rewards[n,t] = reward
@@ -57,14 +59,14 @@ class AdversarialContextualMAB:
                 else:
                     cumulative_regrets[n,t] = regrets[n,t]
                     # cumulative_pseudo_regrets[n,t] = pseudo_regrets[n,t]
-            loss_vectors = environment.get_loss_vectors() #returns self.theta
-            for t in range(horizon):
-                context = contexts[t]
-                comparator_policy_action = np.argmin(context @ np.sum(loss_vectors, axis=0))
-                comparator_loss = context @ loss_vectors[t, comparator_policy_action]
-                expected_regret = comparator_loss - (-rewards[n,t])
-                if t > 0:
-                    expected_regrets[n,t] += expected_regrets[n, t-1] + expected_regret
-                else:
-                    expected_regrets[n,t] = expected_regret
-        return rewards, expected_regrets, avg_rewards, pseudo_regrets, cumulative_regrets, cumulative_pseudo_regrets
+            # loss_vectors = environment.get_loss_vectors() #returns self.theta
+            # for t in range(horizon):
+            #     context = contexts[t]
+            #     comparator_policy_action = np.argmin(context @ np.sum(loss_vectors, axis=0))
+            #     comparator_loss = context @ loss_vectors[t, comparator_policy_action]
+            #     expected_regret = comparator_loss - (-rewards[n,t])
+            #     if t > 0:
+            #         expected_regrets[n,t] += expected_regrets[n, t-1] + expected_regret
+            #     else:
+            #         expected_regrets[n,t] = expected_regret
+        return rewards, regrets, avg_rewards, pseudo_regrets, cumulative_regrets, cumulative_pseudo_regrets

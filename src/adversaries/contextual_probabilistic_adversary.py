@@ -74,7 +74,7 @@ class ContextualProbabilisticAdversary(Adversary):
 
             self.observe_reward(action, policy)
 
-        reward = -self.theta_sequence[t, action] @ context
+        reward = (self.theta_sequence[t, action] @ context)
         reward = np.clip(reward, -1, 1)
 
 
@@ -96,7 +96,7 @@ class ContextualProbabilisticAdversary(Adversary):
         pi_a = policy[a]
         eps = 1e-5
         # Loss estimator (importance-weighted)
-        loss_estimate = - (self.theta_sequence[t, a] @ context)
+        loss_estimate = (self.theta_sequence[t, a] @ context)
         estimator = (1 / (pi_a + eps)) * loss_estimate * (self.sigma_inv @ context)
 
         # Update theta_hat (for tracking)
@@ -109,9 +109,11 @@ class ContextualProbabilisticAdversary(Adversary):
         return self.rewards[self.best_arm, t]
 
     def get_mean_rewards(self, context: np.ndarray) -> np.ndarray:
-        t = min(len(self.history), self.T - 1)
+        t = len(self.history) - 1
         theta_t = self.theta_sequence[t]
-        return theta_t @ context  # Shape: (K,)
+        rewards = (theta_t @ context)
+        rewards = np.clip(rewards, -1, 1)
+        return rewards  # Shape: (K,)
 
     def get_loss_vectors(self):
         return self.theta_sequence
@@ -176,9 +178,10 @@ class ContextualTargetedProbabilisticAdversary(Adversary):
             raise ValueError("We shouldnt get here")
 
         if t == 0:
-            reward = - np.clip(self.theta_sequence[t, action] @ context, -1, 1)
+            reward = np.clip(self.theta_sequence[t, action] @ context, -1, 1)
             self.update_history(action, reward)
             self.last_context = context
+            # print(f'theta sequence: {self.theta_sequence[t]} at time {t} with reward: {reward} and context: {context}')
             return reward
 
         policy = self.estimate_policy(t)
@@ -220,9 +223,9 @@ class ContextualTargetedProbabilisticAdversary(Adversary):
             self.theta_sequence[t, a] = magnitude * context_unit
 
 
-        reward = - np.clip(self.theta_sequence[t, action] @ context, -1, 1)
+        reward = np.clip(self.theta_sequence[t, action] @ context, -1, 1)
+        # print(f'theta sequence: {self.theta_sequence[t]} at time {t} with reward: {reward} and context: {context}' )
         # print(f'action: {action}, reward: {reward}')
-        self.last_context = context
         self.observe_reward(action, policy)
         self.update_history(action, reward)
         return reward
@@ -255,9 +258,12 @@ class ContextualTargetedProbabilisticAdversary(Adversary):
         return self.rewards[self.best_arm, t]
 
     def get_mean_rewards(self, context: np.ndarray) -> np.ndarray:
-        t = min(len(self.history), self.T - 1)
+        t = len(self.history) - 1 # history already updated when this is called
         theta_t = self.theta_sequence[t]
-        return theta_t @ context  # Shape: (K,)
+        rewards = (theta_t @ context)
+        rewards = np.clip(rewards, -1, 1)
+        # print(f'theta sequence for mean rewards: {theta_t} at time {t} with context: {context}')
+        return rewards  # Shape: (K,)
 
     def get_loss_vectors(self):
         t = len(self.history)
