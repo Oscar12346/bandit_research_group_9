@@ -53,7 +53,6 @@ class ContextualProbabilisticAdversary(Adversary):
             cumulative_prob = 0.0
             high_loss_actions = []
             low_loss_actions = []
-
             for i in sorted_indices:
                 if cumulative_prob < self.ub:
                     high_loss_actions.append(i)
@@ -76,8 +75,7 @@ class ContextualProbabilisticAdversary(Adversary):
 
         reward = (self.theta_sequence[t, action] @ context)
         reward = np.clip(reward, -1, 1)
-
-
+        self.update_history(action, reward)
         return reward
 
 
@@ -128,6 +126,8 @@ class ContextualProbabilisticAdversary(Adversary):
         self.current_context = None
         self.best_arm = 0
 
+        self.theta_hat = np.zeros((self.K, self.d))
+
 class ContextualTargetedProbabilisticAdversary(Adversary):
     """Uses previous context to estimate policy for current context and updates loss vectors based on those"""
     def __init__(self, num_actions: int, context_dim: int, horizon: int, eta=0.1, gamma=0.1, sigma=None, ub=0.3,
@@ -170,64 +170,46 @@ class ContextualTargetedProbabilisticAdversary(Adversary):
         policy = (1 - self.gamma) * norm_weights + self.gamma / self.K
         return policy
 
-
     def get_reward(self, action: int, context: np.ndarray) -> float:
+        """Returns reward for a given action and context at time t."""
         t = len(self.history)
-
-        if t >= self.T:
-            raise ValueError("We shouldnt get here")
-
-        if t == 0:
-            reward = np.clip(self.theta_sequence[t, action] @ context, -1, 1)
-            self.update_history(action, reward)
-            self.last_context = context
-            # print(f'theta sequence: {self.theta_sequence[t]} at time {t} with reward: {reward} and context: {context}')
-            return reward
-
-        policy = self.estimate_policy(t)
-
-        theta_t = self.theta_sequence[t]
-
-        # for a in range(self.K):
-        #     prob = policy[a]
-        #     direction = 1.0 if prob >= self.ub else -1.0  # more loss if likely
-        #     delta = direction * self.eta * self.last_context  # eta controls magnitude
-        #     theta_t[a] += delta
-        #
-        # # Compute base rewards from the linear model
-        #
-        #
-        # # print(f'theta_t: {self.theta_sequence[t]}')
-        # norms = np.linalg.norm(theta_t, axis=1, keepdims=True)
-        # self.theta_sequence[t] = theta_t / np.maximum(norms, 1.0)
-
-        sorted_indices = np.argsort(-policy)
-        cumulative_prob = 0.0
-        high_loss_actions = []
-        low_loss_actions = []
-
-        for i in sorted_indices:
-            if cumulative_prob < self.ub:
-                high_loss_actions.append(i)
-                cumulative_prob += policy[i]
-            else:
-                low_loss_actions.append(i)
-
-        desired_rewards = np.zeros(self.K)
-        desired_rewards[high_loss_actions] = 1.0
-        desired_rewards[low_loss_actions] = -1.0
-
-        context_unit = self.last_context / (np.linalg.norm(self.last_context) + 1e-8)
-        for a in range(self.K):
-            magnitude = -desired_rewards[a] / (np.linalg.norm(self.last_context) + 1e-8)
-            self.theta_sequence[t, a] = magnitude * context_unit
-
-
-        reward = np.clip(self.theta_sequence[t, action] @ context, -1, 1)
-        # print(f'theta sequence: {self.theta_sequence[t]} at time {t} with reward: {reward} and context: {context}' )
-        # print(f'action: {action}, reward: {reward}')
-        self.observe_reward(action, policy)
+        reward = self.theta_sequence[t, action] @ context
+        reward = np.clip(reward, -1, 1)
+        self.last_context = context  # Save current context for use in next round
+        self.observe_reward(action, self.estimate_policy(t))
         self.update_history(action, reward)
+
+        # Compute theta for time t+1 (based on current context)
+        if t < self.T - 1:
+            next_theta = np.zeros((self.K, self.d))
+
+            policy = self.estimate_policy(t)  # Estimate policy from current context
+
+            sorted_indices = np.argsort(-policy)
+            cumulative_prob = 0.0
+            high_loss_actions, low_loss_actions = [], []
+
+            for i in sorted_indices:
+                if cumulative_prob < self.ub:
+                    high_loss_actions.append(i)
+                    cumulative_prob += policy[i]
+                else:
+                    low_loss_actions.append(i)
+
+            desired_rewards = np.zeros(self.K)
+            desired_rewards[high_loss_actions] = -1.0
+            desired_rewards[low_loss_actions] = 1.0
+
+            context_norm_sq = np.dot(context, context) + 1e-8
+            for a in range(self.K):
+                theta = -desired_rewards[a] * context / context_norm_sq
+                theta_norm = np.linalg.norm(theta)
+                if theta_norm > 1.0:
+                    theta = theta / theta_norm
+                next_theta[a] = theta
+            self.theta_sequence[t + 1] = next_theta
+
+
         return reward
 
     def observe_reward(self, a: int, policy: np.ndarray):
