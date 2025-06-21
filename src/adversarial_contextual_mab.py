@@ -1,5 +1,4 @@
 import numpy as np
-import vis
 
 from src.adversaries.contextual_probabilistic_adversary import ContextualProbabilisticAdversary
 from src.agents.agent import Agent
