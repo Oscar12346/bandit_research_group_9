@@ -6,10 +6,10 @@ from src.environments.adversarial_contextual_env import AdversarialContextualEnv
 class AdversarialContextualMAB:
 
     def __init__(self):
-        pass 
+        pass
 
     def play(self, agent: Agent, environment: AdversarialContextualEnv, num_sim: int, horizon: int) -> tuple:
-        
+
         # init results
         rewards = np.zeros((num_sim, horizon))
         avg_rewards = np.zeros((num_sim, horizon))
@@ -21,6 +21,7 @@ class AdversarialContextualMAB:
         # Iterate over simulations
         for n in range(num_sim):
             agent.reset()
+            environment.reset()
 
             # Iterate over time steps
             for t in range(horizon):
@@ -42,11 +43,11 @@ class AdversarialContextualMAB:
                 pseudo_regrets[n,t] = best_reward - means[action]
 
                 # Compute cumulatives
-                if t > 0: 
+                if t > 0:
                     cumulative_regrets[n,t] = cumulative_regrets[n,t-1] + regrets[n,t]
                     cumulative_pseudo_regrets[n,t] = cumulative_pseudo_regrets[n,t-1] + pseudo_regrets[n,t]
 
-                else: 
+                else:
                     cumulative_regrets[n,t] = regrets[n,t]
                     cumulative_pseudo_regrets[n,t] = pseudo_regrets[n,t]
 
