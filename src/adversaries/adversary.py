@@ -13,7 +13,7 @@ class Adversary:
     def get_best_reward(self):
         pass
 
-    def get_mean_rewards(self, context: np.ndarray) -> np.ndarray:
+    def get_mean_rewards(self) -> np.ndarray:
         pass
     
     def reset(self):
