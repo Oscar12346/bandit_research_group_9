@@ -1,0 +1,28 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Adversarial-Bandit Testing Framework
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Jeroen
+    family-names: Janssen
+    affiliation: MSc Student TU-Delft
+    email: j.d.janssen@student.tudelft.nl
+  - given-names: Tomàs
+    family-names: Osarte
+    email: t.osarte@student.tudelft.nl
+    affiliation: MSc Student TU-Delft
+  - given-names: David
+    name-particle: van der
+    family-names: Maas
+    email: d.w.vandermaas@student.tudelft.nl
+    affiliation: MSc Student TU-Delft
+  - given-names: Oscar
+    family-names: Wezenaar
+    email: o.a.h.wezenaar@student.tudelft.nl
+    affiliation: MSc Student TU-Delft
+repository-code: 'https://github.com/Oscar12346/bandit_research_group_9'
