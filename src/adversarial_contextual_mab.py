@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 from src.adversaries.contextual_probabilistic_adversary import ContextualProbabilisticAdversary
@@ -22,6 +24,10 @@ class AdversarialContextualMAB:
         cumulative_pseudo_regrets = np.zeros((num_sim, horizon))
         expected_regrets = np.zeros((num_sim, horizon))
         epsilons = np.zeros(num_sim)
+        theta_sequence = []
+        contexts = []
+
+
 
         # Iterate over simulations
         for n in range(num_sim):
@@ -29,7 +35,7 @@ class AdversarialContextualMAB:
             agent.reset()
             environment.reset() # resets the adversary
             actions = []
-
+            counter = 0
             # Iterate over time steps
             for t in range(horizon):
                 # Interact with the environment
@@ -53,6 +59,11 @@ class AdversarialContextualMAB:
                 rewards[n,t] = reward
                 # avg_rewards[n,t] = means[action]
                 regrets[n,t]= best_reward - reward
+                # print(f'regrets: {regrets[n,t]}')
+                if abs(regrets[n,t]) < 1e-6:
+                    counter += 1
+
+                # print(f"best_reward: {best_reward} actual reward: {reward}")
                 # pseudo_regrets[n,t] = best_reward - means[action]
 
                 # Compute cumulatives
@@ -62,76 +73,27 @@ class AdversarialContextualMAB:
                 else:
                     cumulative_regrets[n,t] = regrets[n,t]
                     # cumulative_pseudo_regrets[n,t] = pseudo_regrets[n,t]
-
-            theta_sequence = environment.get_loss_vectors()  # (K, d)
-
+            loss_vectors = environment.get_loss_vectors()  # (K, d)
 
             contexts = np.array(contexts)  # (T, d)
-            theta_sequence = np.array(theta_sequence)  # (T, K, d)
+            # theta_sequence = np.array(theta_sequence)  # (T, K, d)
 
-            eps_max, eps_mean = self.estimate_epsilon(contexts, theta_sequence)
-            epsilons[n] = eps_mean
+            for t in range(horizon):
+            #     instantaneous_regret[t] = actual_losses[t] - min(
+            #         contexts[t] @ loss_vectors[t][a] for a in range(len(loss_vectors[0])))
+            # regrets[n] = np.cumsum(instantaneous_regret)
+                context = contexts[t]
 
-            # loss_vectors = environment.get_loss_vectors() #returns self.theta
-            # actual_losses = [contexts[t] @ loss_vectors[t][actions[t]] for t in range(horizon)]
-            # Try fixed policies that always choose the same action
-            # policy_losses = []
-            # for a in range(len(loss_vectors[0])):
-            #     loss = sum(contexts[t] @ loss_vectors[t][a] for t in range(horizon))
-            #     policy_losses.append(loss)
+                comparator_policy_action = np.argmax(context @ np.sum(loss_vectors, axis=0))
+                comparator_reward = context @ loss_vectors[t, comparator_policy_action]
+                expected_regret = comparator_reward - (rewards[n,t])
+                if t > 0:
+                    expected_regrets[n,t] += expected_regrets[n, t-1] + expected_regret
+                else:
+                    expected_regrets[n,t] = expected_regret
+        return rewards, expected_regrets, contexts, theta_sequence, cumulative_regrets, epsilons
 
-            # best_fixed_policy_loss = min(policy_losses)
-            # instantaneous_regret = np.zeros(horizon)
-            #
-            #
-            # for t in range(horizon):
-            # #     instantaneous_regret[t] = actual_losses[t] - min(
-            # #         contexts[t] @ loss_vectors[t][a] for a in range(len(loss_vectors[0])))
-            # # regrets[n] = np.cumsum(instantaneous_regret)
-            #     context = contexts[t]
-            #
-            #     comparator_policy_action = np.argmax(context @ np.sum(loss_vectors, axis=0))
-            #     comparator_reward = context @ loss_vectors[t, comparator_policy_action]
-            #     expected_regret = comparator_reward - (rewards[n,t])
-            #     if t > 0:
-            #         expected_regrets[n,t] += expected_regrets[n, t-1] + expected_regret
-            #     else:
-            #         expected_regrets[n,t] = expected_regret
-        return rewards, expected_regrets, avg_rewards, pseudo_regrets, cumulative_regrets, epsilons
 
-    def estimate_epsilon(self,contexts, theta_seq):
-        """
-        Estimate epsilon for a non-linear adversary by computing how far the rewards deviate
-        from a best linear approximation.
-
-        :param contexts: List of context vectors x_t used during a simulation.
-        :param adversary: The ContextualTargetedProbabilisticAdversary instance.
-        :return: Estimated epsilon (scalar).
-        """
-        T, K, d = theta_seq.shape
-        X = np.array(contexts)  # shape (T, d)
-
-        epsilons = []
-
-        for a in range(K):
-            # Estimate best-fit fixed theta for this arm (OLS solution)
-            A = theta_seq[:, a, :]  # shape (T, d)
-            y = np.einsum("td,td->t", A, X)  # True rewards at each t: r_t = <theta_t,a, x_t>
-
-            # Solve for best-fit linear approximation: theta_bar_a minimizing ||A_t x_t - <theta_bar, x_t>||
-            # Solve least squares: min_theta ||X @ theta - y||^2
-            theta_bar, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
-
-            # Compute error at each time step
-            y_hat = X @ theta_bar
-            epsilon_a = np.abs(y - y_hat)
-            epsilons.append(epsilon_a)
-
-        epsilons = np.stack(epsilons, axis=1)  # shape (T, K)
-        epsilon_max = np.max(epsilons)
-        epsilon_mean = np.mean(epsilons)
-
-        return epsilon_max, epsilon_mean
     # Alternative way to calculate regret which I want to run by Guyon
     # def play(self, agent: Agent, environment: AdversarialContextualEnv, num_sim: int, horizon: int) -> tuple:
     #     rewards = np.zeros((num_sim, horizon))

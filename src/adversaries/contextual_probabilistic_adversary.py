@@ -151,14 +151,16 @@ class ContextualTargetedProbabilisticAdversary(Adversary):
         self.sigma = sigma if sigma is not None else np.identity(self.d)
         self.sigma_inv = np.linalg.inv(self.sigma)
         self.t = 0
-        self.rewards = np.zeros((self.K, self.T)) - 1
         self.last_context = None
         self.best_arm = 0
         self.mean_rewards = np.zeros(self.K)
         self.used_loss_vectors = []
         self.theta_hat = np.zeros((self.K, self.d))
+        self.rewards = np.zeros(self.T)
 
     def estimate_policy(self, t: int) -> np.ndarray:
+        if t == 0:
+            return np.ones(self.K) / self.K
         theta_t = self.theta_hat
         scores = -self.eta * (theta_t @ self.last_context)
         stable_scores = scores - np.max(scores)
@@ -177,15 +179,18 @@ class ContextualTargetedProbabilisticAdversary(Adversary):
         """Returns reward for a given action and context at time t."""
         t = self.t
         reward = self.theta_sequence[t, action] @ context
+        if reward < -1 or reward > 1:
+            print(f"reward: {reward}")
         reward = np.clip(reward, -1, 1)
         self.last_context = context  # Save current context for use in next round
-        self.observe_reward(action, self.estimate_policy(t))
+
 
         # Compute theta for time t+1 (based on current context)
         if t < self.T - 1:
             next_theta = np.zeros((self.K, self.d))
 
             policy = self.estimate_policy(t)  # Estimate policy from current context
+            self.observe_reward(action, policy)
 
             sorted_indices = np.argsort(-policy)
             cumulative_prob = 0.0
@@ -212,6 +217,8 @@ class ContextualTargetedProbabilisticAdversary(Adversary):
             self.theta_sequence[t + 1] = next_theta
 
         self.t += 1
+        self.rewards[t] = reward
+
         return reward
 
     def observe_reward(self, a: int, policy: np.ndarray):
@@ -259,7 +266,7 @@ class ContextualTargetedProbabilisticAdversary(Adversary):
         norms = np.linalg.norm(self.theta_sequence, axis=2, keepdims=True)
         self.theta_sequence = self.theta_sequence / np.maximum(norms, 1.0)
         self.t = 0
-        self.rewards = np.zeros((self.K, self.T))
+        self.rewards = np.zeros(self.T)
         self.last_context = None
         self.best_arm = 0
         self.theta_hat = np.zeros((self.K, self.d))

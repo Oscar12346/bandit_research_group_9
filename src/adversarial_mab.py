@@ -85,7 +85,7 @@ class AdversarialMultiArmedBandit:
 if __name__ == "__main__":
 
     K = 5  # number of arms
-    T = 10000  # Horizon
+    T = 1000  # Horizon
     N = 100  # number of simulations
     # Example of normal MAB env initialization
     strats = [0,1]
@@ -97,24 +97,37 @@ if __name__ == "__main__":
     amab = AdversarialMultiArmedBandit()
     bounds_per_timestep = np.array([2 * np.sqrt(t * K * np.log(K)) for t in range(T)])
     exp3 = Exp3(K, lr=lr)
-    for strat in strats:
-        adversary = InverseProbabilityRewardAdversary(K, T, initial_reward_strategy=strat)
+    # for strat in strats:
+    #     adversary = InverseProbabilityRewardAdversary(K, T, initial_reward_strategy=strat)
+    #     random_mab_env = Adversarial_MAB_env(K, adversary)
+    #
+    #     experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="regret")
+    #
+    #     # Modify the label to include K and strategy
+    #     for agent_name, data in experiment.items():
+    #         label = f"{agent_name}_K={K}_strat={strat}"
+    #         experiments[label] = data
+    #
+    # display.plot_result(experiments, q=10, mode="regret", cumulative=True,
+    #                     bounds_per_timestep=bounds_per_timestep)
+
+    ubs = [0.1, 0.2, 0.4, 0.6]
+    experiments2 = {}
+    for ub in ubs:
+        adversary = TargetedProbabilityExploitationAdversary(K, T, ub=ub)
         random_mab_env = Adversarial_MAB_env(K, adversary)
 
         experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="regret")
 
         # Modify the label to include K and strategy
         for agent_name, data in experiment.items():
-            label = f"{agent_name}_K={K}_strat={strat}"
-            experiments[label] = data
+            label = f"{agent_name}_K={K}_p={ub}"
+            experiments2[label] = data
 
-    display.plot_result(experiments, q=10, mode="regret", cumulative=True,
+    display.plot_result(experiments2, q=10, mode="regret", cumulative=True,
                         bounds_per_timestep=bounds_per_timestep)
 
-
-
-
-    # eps_greedy = EpsilonGreedy(K, 0.01)
+# eps_greedy = EpsilonGreedy(K, 0.01)
     #
     # experiment = amab.experiment_mab(random_mab_env, [exp3], N=N, T=T, mode="regret")
     #

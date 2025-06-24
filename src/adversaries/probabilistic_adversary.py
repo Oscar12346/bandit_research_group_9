@@ -85,10 +85,9 @@ class ProbabilisticAdversary(Adversary):
         self.estimated_rewards = np.zeros(self.K)
 
 class TargetedProbabilityExploitationAdversary(ProbabilisticAdversary):
-    def __init__(self, K,T, lb=1/4, ub=1/2):
+    def __init__(self, K,T, ub=1/2):
         super().__init__(K,T)
 
-        self.lb = lb
         self.ub = ub
 
     def get_reward(self, action: int, context: np.ndarray) -> float:
@@ -108,7 +107,8 @@ class TargetedProbabilityExploitationAdversary(ProbabilisticAdversary):
 
             for i in sorted_indices:
                 prob = self.probabilities[i]
-                if cumulative_prob + prob > self.lb:
+                if cumulative_prob + prob > self.ub and len(reward_indices)==0:
+                    reward_indices.append(i)
                     break
                 if cumulative_prob + prob <= self.ub:
                     reward_indices.append(i)
