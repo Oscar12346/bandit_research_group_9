@@ -47,3 +47,9 @@ When you're done working on the project, you can deactivate the virtual environm
 ```bash
 deactivate
 ```
+
+# How to test new Adversaries
+To test new adversaries you should plugin inside the `adversaries` folder a new python file with the adversary code following the template
+provided inside `adversaries/adversary.py`. 
+
+Then writhe a `jupyter notebook` following the same structure of the experiments provided in `experiments` folder.
