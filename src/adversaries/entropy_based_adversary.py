@@ -29,9 +29,6 @@ class EntropyBasedAdversary(Adversary):
         self.history = []
         self._last_rewards = None
 
-    def clip01(self, x):
-        return np.minimum(1.0, np.maximum(0.0, x))
-
     def update_history(self, action: int, reward: float):
         self.history.append((action, reward))
 
@@ -50,7 +47,7 @@ class EntropyBasedAdversary(Adversary):
         r = np.full(self.k, eta)
         r[self.baseline_arm]        = eta + self.Delta
         r[self.best_arm]            = eta + 2 * self.Delta
-        r = self.clip01(r)
+        r = np.minimum(1.0, np.maximum(0.0, r))
 
         self._last_rewards = r
         return float(r[action])

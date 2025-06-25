@@ -7,16 +7,7 @@ class AdversarialMultiArmedBandit:
     def __init__(self):
         pass
 
-    def play(self, environment: Environment, agent: Agent, num_sim: int, horizon: int):
-        """
-        Play N independent runs of length T for the specified agent.
-
-        :param environment: a MAB instance
-        :param agent: a bandit algorithm
-        :param N: number of independent simulations
-        :param T: decision horizon
-        :return: the agent's name, and the collected data in numpy arrays
-        """
+    def play(self, environment: Environment, agent: Agent, num_sim: int, horizon: int, k: int):
 
         # init results
         rewards = np.zeros((num_sim, horizon))
@@ -25,6 +16,7 @@ class AdversarialMultiArmedBandit:
         pseudo_regrets = np.zeros((num_sim, horizon))
         cumulative_regrets = np.zeros((num_sim, horizon))
         cumulative_pseudo_regrets = np.zeros((num_sim, horizon))
+        arm_rewards = np.zeros((num_sim, horizon, k))
 
         # Iterate over simulations
         for n in range(num_sim):
@@ -45,6 +37,7 @@ class AdversarialMultiArmedBandit:
                 avg_rewards[n,t] = means[action]
                 regrets[n,t]= best_reward - reward
                 pseudo_regrets[n,t] = best_reward - means[action]
+                arm_rewards[n, t, :] = means
 
                 # Compute cumulatives
                 if t > 0: 
@@ -55,4 +48,10 @@ class AdversarialMultiArmedBandit:
                     cumulative_regrets[n,t] = regrets[n,t]
                     cumulative_pseudo_regrets[n,t] = pseudo_regrets[n,t]
 
-        return rewards, regrets, avg_rewards, pseudo_regrets, cumulative_regrets, cumulative_pseudo_regrets
+        fixed_policy_regret = np.zeros((num_sim, horizon))
+        for n in range(num_sim):
+            best_arm = np.argmax(np.sum(arm_rewards[n], axis=0))
+            best_rewards = arm_rewards[n,:,best_arm]
+            fixed_policy_regret[n] = np.cumsum(best_rewards - rewards[n])
+
+        return rewards, regrets, avg_rewards, pseudo_regrets, cumulative_regrets, cumulative_pseudo_regrets, fixed_policy_regret
